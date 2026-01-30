@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState } from "react";
 import Home from "./components/Home.jsx";
 import Cart from "./components/Cart.jsx";
