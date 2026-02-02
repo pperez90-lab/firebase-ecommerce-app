@@ -11,17 +11,30 @@ const Cart = () => {
   const { currentUser } = useAuth();
 
   const handleCheckout = async () => {
-    if (!currentUser) return;
+    try {
+      if (!currentUser) {
+        console.log("No currentUser, aborting checkout");
+        alert("You must be logged in to checkout.");
+        return;
+      }
 
-    // save order to Firestore
-    await addDoc(collection(db, "orders"), {
-      userId: currentUser.uid,
-      items: cartItems,
-      total,
-      createdAt: serverTimestamp(),
-    });
+      console.log("currentUser.uid:", currentUser.uid);
+      console.log("Checking out with items:", cartItems, "total:", total);
 
-    dispatch(clearCart());
+      const docRef = await addDoc(collection(db, "orders"), {
+        userId: currentUser.uid,
+        items: cartItems,
+        total,
+        createdAt: serverTimestamp(),
+      });
+
+      console.log("Order saved with ID:", docRef.id);
+      alert("Order placed successfully!");
+      dispatch(clearCart());
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert("Checkout failed: " + err.message);
+    }
   };
 
   if (!cartItems.length) {
