@@ -12,6 +12,8 @@ const Cart = () => {
 
   const handleCheckout = async () => {
     try {
+      console.log("Checkout clicked!");
+
       if (!currentUser) {
         console.log("No currentUser, aborting checkout");
         alert("You must be logged in to checkout.");
@@ -69,7 +71,11 @@ const Cart = () => {
       {/* total + checkout */}
       <div className="cart-summary">
         <h3>Total: ${total.toFixed(2)}</h3>
-        <button onClick={handleCheckout} className="btn btn-primary">
+        <button
+          onClick={handleCheckout}
+          className="btn btn-primary"
+          style={{ cursor: "pointer", pointerEvents: "auto" }}
+        >
           Checkout
         </button>
       </div>
