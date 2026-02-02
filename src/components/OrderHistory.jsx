@@ -1,63 +1,56 @@
-import { useAuth } from "../context/AuthContext";
-import { db } from "../firebase";
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 
 const OrderHistory = () => {
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
   const [orders, setOrders] = useState([]);
-  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
-    const loadOrders = async () => {
-      if (!user) return;
-      const ordersCol = collection(db, "orders");
+    if (!currentUser) return;
+
+    const fetchOrders = async () => {
       const q = query(
-        ordersCol,
-        where("userId", "==", user.uid),
+        collection(db, "orders"),
+        where("userId", "==", currentUser.uid),
         orderBy("createdAt", "desc"),
       );
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const snap = await getDocs(q);
+      const data = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setOrders(data);
     };
-    loadOrders();
-  }, [user]);
 
-  if (!user) return <p>Please log in to view your order history.</p>;
+    fetchOrders();
+  }, [currentUser]);
+
+  if (!orders.length) {
+    return <h2 className="page-title">My Orders</h2>;
+  }
 
   return (
-    <div>
-      <h2>My Orders</h2>
-      <ul>
-        {orders.map((order) => (
-          <li
-            key={order.id}
-            onClick={() => setSelectedOrder(order)}
-            style={{ cursor: "pointer" }}
-          >
-            <strong>{order.id}</strong> –{" "}
-            {new Date(order.createdAt).toLocaleString()} – Total:{" "}
-            {order.total.toFixed(2)}
-          </li>
-        ))}
-      </ul>
+    <div className="page">
+      <h2 className="page-title">My Orders</h2>
 
-      {selectedOrder && (
-        <div>
-          <h3>Order Details</h3>
-          <p>ID: {selectedOrder.id}</p>
-          <p>Date: {new Date(selectedOrder.createdAt).toLocaleString()}</p>
-          <p>Total: {selectedOrder.total.toFixed(2)}</p>
-          <ul>
-            {selectedOrder.items.map((item) => (
-              <li key={item.id}>
-                {item.title} x {item.quantity} – {item.price}
+      {orders.map((order) => (
+        <div key={order.id} className="order-card">
+          <h3>Order #{order.id}</h3>
+          <p>
+            Total: ${order.total?.toFixed(2)} •{" "}
+            {order.createdAt?.toDate().toLocaleString()}
+          </p>
+
+          <ul className="order-items">
+            {order.items?.map((item) => (
+              <li key={item.id} className="order-item">
+                <span>{item.title}</span>
+                <span>Qty: {item.quantity}</span>
+                <span>${item.price.toFixed(2)}</span>
               </li>
             ))}
           </ul>
         </div>
-      )}
+      ))}
     </div>
   );
 };
