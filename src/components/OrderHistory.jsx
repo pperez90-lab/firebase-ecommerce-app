@@ -27,7 +27,9 @@ const OrderHistory = () => {
         console.log("Orders fetched:", snap.size);
 
         const data = snap.docs.map((doc) => {
-          return { id: doc.id, ...doc.data() };
+          const orderData = doc.data();
+          console.log("Order data:", orderData);
+          return { id: doc.id, ...orderData };
         });
 
         // Sort manually by createdAt descending
@@ -71,20 +73,33 @@ const OrderHistory = () => {
       <h2 className="page-title">My Orders</h2>
 
       {orders.map((order) => (
-        <div key={order.id} className="order-card">
+        <div
+          key={order.id}
+          className="order-card"
+          style={{
+            marginBottom: "20px",
+            padding: "15px",
+            border: "1px solid #ddd",
+            borderRadius: "8px",
+          }}
+        >
           <h3>Order #{order.id.substring(0, 8)}</h3>
           <p>
             <strong>Total: ${order.total?.toFixed(2)}</strong>
-            {order.createdAt && (
-              <> • {order.createdAt.toDate().toLocaleString()}</>
+            {order.createdAt && order.createdAt.toDate && (
+              <span> • {order.createdAt.toDate().toLocaleString()}</span>
             )}
           </p>
 
-          <ul className="order-items">
+          <ul className="order-items" style={{ listStyle: "none", padding: 0 }}>
             {order.items?.map((item, index) => (
-              <li key={item.id || index} className="order-item">
-                <span>{item.title}</span>
-                <span>Qty: {item.quantity}</span>
+              <li
+                key={item.id || index}
+                className="order-item"
+                style={{ padding: "8px 0", borderBottom: "1px solid #eee" }}
+              >
+                <span style={{ fontWeight: "bold" }}>{item.title}</span>
+                <span style={{ margin: "0 10px" }}>Qty: {item.quantity}</span>
                 <span>${(item.price * item.quantity).toFixed(2)}</span>
               </li>
             ))}
