@@ -4,28 +4,35 @@ import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
 const OrderHistory = () => {
-  const { currentUser } = useAuth();
+  const authData = useAuth();
+  const currentUser = authData?.currentUser || authData;
+  const userId = currentUser?.uid || currentUser?.user?.uid || currentUser?.id;
+
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser || !userId) return;
 
     const fetchOrders = async () => {
-      const q = query(
-        collection(db, "orders"),
-        where("userId", "==", currentUser.uid),
-        orderBy("createdAt", "desc"),
-      );
-      const snap = await getDocs(q);
-      const data = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setOrders(data);
+      try {
+        const q = query(
+          collection(db, "orders"),
+          where("userId", "==", userId),
+          orderBy("createdAt", "desc"),
+        );
+        const snap = await getDocs(q);
+        const data = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setOrders(data);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+      }
     };
 
     fetchOrders();
-  }, [currentUser]);
+  }, [currentUser, userId]);
 
   if (!orders.length) {
-    return <h2 className="page-title">My Orders</h2>;
+    return <h2 className="page-title">No orders yet</h2>;
   }
 
   return (

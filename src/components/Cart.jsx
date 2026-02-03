@@ -9,27 +9,29 @@ const Cart = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const total = useSelector((state) => state.cart.total);
 
-  // Get the entire auth object first to debug
   const authData = useAuth();
   const currentUser = authData?.currentUser || authData;
+
+  // Extract uid from various possible locations
+  const userId = currentUser?.uid || currentUser?.user?.uid || currentUser?.id;
 
   const handleCheckout = async () => {
     try {
       console.log("Checkout clicked!");
-      console.log("authData:", authData);
       console.log("currentUser:", currentUser);
+      console.log("userId extracted:", userId);
 
-      if (!currentUser) {
-        console.error("No currentUser found");
+      if (!currentUser || !userId) {
+        console.error("No valid user ID found");
         alert("You must be logged in to checkout.");
         return;
       }
 
-      console.log("currentUser.uid:", currentUser.uid);
-      console.log("Checking out with items:", cartItems, "total:", total);
+      console.log("Checking out with userId:", userId);
+      console.log("Items:", cartItems, "Total:", total);
 
       const docRef = await addDoc(collection(db, "orders"), {
-        userId: currentUser.uid,
+        userId: userId,
         items: cartItems,
         total,
         createdAt: serverTimestamp(),
