@@ -4,20 +4,18 @@ import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
 
 const OrderHistory = () => {
-  const authData = useAuth();
-  const currentUser = authData?.currentUser || authData;
-  const userId = currentUser?.uid || currentUser?.user?.uid || currentUser?.id;
-
+  // Fix: use 'user' instead of 'currentUser'
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    if (!currentUser || !userId) return;
+    if (!user) return;
 
     const fetchOrders = async () => {
       try {
         const q = query(
           collection(db, "orders"),
-          where("userId", "==", userId),
+          where("userId", "==", user.uid),
           orderBy("createdAt", "desc"),
         );
         const snap = await getDocs(q);
@@ -29,10 +27,15 @@ const OrderHistory = () => {
     };
 
     fetchOrders();
-  }, [currentUser, userId]);
+  }, [user]);
 
   if (!orders.length) {
-    return <h2 className="page-title">No orders yet</h2>;
+    return (
+      <div className="page">
+        <h2 className="page-title">My Orders</h2>
+        <p>No orders yet</p>
+      </div>
+    );
   }
 
   return (

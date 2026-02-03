@@ -9,29 +9,25 @@ const Cart = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const total = useSelector((state) => state.cart.total);
 
-  const authData = useAuth();
-  const currentUser = authData?.currentUser || authData;
-
-  // Extract uid from various possible locations
-  const userId = currentUser?.uid || currentUser?.user?.uid || currentUser?.id;
+  // Fix: use 'user' instead of 'currentUser'
+  const { user } = useAuth();
 
   const handleCheckout = async () => {
     try {
       console.log("Checkout clicked!");
-      console.log("currentUser:", currentUser);
-      console.log("userId extracted:", userId);
+      console.log("user:", user);
 
-      if (!currentUser || !userId) {
-        console.error("No valid user ID found");
+      if (!user) {
+        console.error("No user found");
         alert("You must be logged in to checkout.");
         return;
       }
 
-      console.log("Checking out with userId:", userId);
-      console.log("Items:", cartItems, "Total:", total);
+      console.log("user.uid:", user.uid);
+      console.log("Checking out with items:", cartItems, "total:", total);
 
       const docRef = await addDoc(collection(db, "orders"), {
-        userId: userId,
+        userId: user.uid, // Now this will work!
         items: cartItems,
         total,
         createdAt: serverTimestamp(),
