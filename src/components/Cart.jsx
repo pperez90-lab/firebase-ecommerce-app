@@ -8,14 +8,19 @@ const Cart = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
   const total = useSelector((state) => state.cart.total);
-  const { currentUser } = useAuth();
+
+  // Get the entire auth object first to debug
+  const authData = useAuth();
+  const currentUser = authData?.currentUser || authData;
 
   const handleCheckout = async () => {
     try {
       console.log("Checkout clicked!");
+      console.log("authData:", authData);
+      console.log("currentUser:", currentUser);
 
       if (!currentUser) {
-        console.log("No currentUser, aborting checkout");
+        console.error("No currentUser found");
         alert("You must be logged in to checkout.");
         return;
       }
@@ -71,11 +76,7 @@ const Cart = () => {
       {/* total + checkout */}
       <div className="cart-summary">
         <h3>Total: ${total.toFixed(2)}</h3>
-        <button
-          onClick={handleCheckout}
-          className="btn btn-primary"
-          style={{ cursor: "pointer", pointerEvents: "auto" }}
-        >
+        <button onClick={handleCheckout} className="btn btn-primary">
           Checkout
         </button>
       </div>
